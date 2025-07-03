@@ -11,6 +11,8 @@ import {
 import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
 import { getCuteUrl } from './reddit.js';
 import { InteractionResponseFlags } from 'discord-interactions';
+import customRouter from './custom.js';
+import { buttonHandler } from './button-handlers.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -25,6 +27,9 @@ class JsonResponse extends Response {
 }
 
 const router = AutoRouter();
+
+// Handle requests to the custom router
+router.all('/custom/*', (request, env) => customRouter.fetch(request, env));
 
 /**
  * A simple :wave: hello page to verify the worker is working.
@@ -81,6 +86,12 @@ router.post('/', async (request, env) => {
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
     }
+  }
+
+  if (interaction.type === InteractionType.MESSAGE_COMPONENT) {
+    // Handle button clicks and other message component interactions
+    const response = await buttonHandler.handle(interaction, env);
+    return new JsonResponse(response);
   }
 
   console.error('Unknown Type');
