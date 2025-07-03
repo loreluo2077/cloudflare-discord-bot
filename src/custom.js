@@ -1,4 +1,5 @@
 import { AutoRouter } from 'itty-router';
+import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -473,94 +474,79 @@ customRouter.post('/send-demo-buttons', async (request, env) => {
   }
 });
 
-// API 文档路由
-customRouter.get('/docs', () => {
-  return new JsonResponse({
-    title: 'Discord Bot 自定义 API',
-    version: '1.0.0',
-    endpoints: {
-      'GET /custom/hello': {
-        description: '简单的问候消息',
-        response: 'JSON 对象包含问候消息和时间戳'
-      },
-      'POST /custom/send-message': {
-        description: '发送消息到指定的 Discord 频道',
-        body: {
-          channelId: 'string (必需) - Discord 频道 ID',
-          content: 'string (必需) - 消息内容 (最多 2000 字符)'
-        },
-        response: '成功发送的确认消息'
-      },
-      'GET /custom/channel/:channelId': {
-        description: '获取 Discord 频道信息',
-        params: {
-          channelId: 'string (必需) - Discord 频道 ID'
-        },
-        response: '频道的基本信息'
-      },
-      'POST /custom/send-message-with-buttons': {
-        description: '发送带按钮的消息到指定的 Discord 频道',
-        body: {
-          channelId: 'string (必需) - Discord 频道 ID',
-          content: 'string (必需) - 消息内容 (最多 2000 字符)',
-          buttons: 'array (必需) - 按钮配置数组'
-        },
-        response: '成功发送的确认消息'
-      },
-      'POST /custom/send-demo-buttons': {
-        description: '发送预设的示例按钮消息（快速测试）',
-        body: {
-          channelId: 'string (必需) - Discord 频道 ID',
-          content: 'string (可选) - 自定义消息内容'
-        },
-        response: '成功发送的确认消息和使用的按钮信息'
-      },
-      'GET /custom/docs': {
-        description: '显示此 API 文档',
-        response: 'API 端点列表和使用说明'
-      }
-    },
-    usage: {
-      sendMessage: {
-        url: 'POST /custom/send-message',
-        example: {
-          channelId: '1234567890123456789',
-          content: '你好，这是来自 API 的消息！'
-        }
-      },
-      sendMessageWithButtons: {
-        url: 'POST /custom/send-message-with-buttons',
-        example: {
-          channelId: '1234567890123456789',
-          content: '你好，这是来自 API 的消息！',
-          buttons: [
-            { label: '按钮1', custom_id: 'button1', style: 1 },
-            { label: '按钮2', custom_id: 'button2', style: 2 },
-            { label: '按钮3', custom_id: 'button3', style: 3 },
-            { label: '按钮4', custom_id: 'button4', style: 4 },
-            { label: '按钮5', custom_id: 'button5', style: 5, url: 'https://example.com' }
-          ]
-        }
-      }
-    },
-    buttonStyles: {
-      1: 'Primary (蓝色)',
-      2: 'Secondary (灰色)',
-      3: 'Success (绿色)',
-      4: 'Danger (红色)',
-      5: 'Link (链接按钮，需要 url 字段)'
-    },
-    buttonConfiguration: {
-      required: ['label', 'custom_id 或 url'],
-      optional: ['style', 'disabled', 'emoji'],
-      limits: {
-        maxButtons: 25,
-        maxLabelLength: 80,
-        maxCustomIdLength: 100,
-        maxButtonsPerRow: 5
-      }
+// 手动注册 Discord 命令的 API
+customRouter.post('/register', async (request, env) => {
+  try {
+    // 验证必需的环境变量
+    if (!env.DISCORD_TOKEN) {
+      return new JsonResponse(
+        { error: 'DISCORD_TOKEN 环境变量未设置' },
+        { status: 500 }
+      );
     }
-  });
+
+    if (!env.DISCORD_APPLICATION_ID) {
+      return new JsonResponse(
+        { error: 'DISCORD_APPLICATION_ID 环境变量未设置' },
+        { status: 500 }
+      );
+    }
+
+    // 向 Discord API 注册命令
+    const url = `https://discord.com/api/v10/applications/${env.DISCORD_APPLICATION_ID}/commands`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bot ${env.DISCORD_TOKEN}`,
+      },
+      method: 'PUT',
+      body: JSON.stringify([AWW_COMMAND, INVITE_COMMAND]),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return new JsonResponse({
+        success: true,
+        message: '成功注册所有命令',
+        commands: data.map(cmd => ({
+          id: cmd.id,
+          name: cmd.name,
+          description: cmd.description,
+          version: cmd.version
+        }))
+      });
+    } else {
+      let errorText = `注册命令时出错: ${response.status} ${response.statusText}`;
+      try {
+        const error = await response.text();
+        if (error) {
+          errorText = `${errorText}\n\n${error}`;
+        }
+      } catch (err) {
+        // 忽略解析错误
+      }
+      
+      return new JsonResponse(
+        { 
+          error: '注册命令失败',
+          details: errorText
+        },
+        { status: response.status }
+      );
+    }
+
+  } catch (error) {
+    console.error('注册 Discord 命令时出错:', error);
+    return new JsonResponse(
+      { 
+        error: '注册命令失败',
+        details: error.message 
+      },
+      { status: 500 }
+    );
+  }
 });
+
 
 export default customRouter; 

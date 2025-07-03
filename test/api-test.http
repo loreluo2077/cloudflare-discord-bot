@@ -1,0 +1,290 @@
+###
+# Discord Bot API 测试文件
+# 
+# 使用方法：
+# 1. 在 VS Code 中安装 "REST Client" 扩展
+# 2. 点击每个请求上方的 "Send Request" 按钮
+# 3. 或者使用快捷键 Ctrl+Alt+R (Windows/Linux) 或 Cmd+Alt+R (Mac)
+
+### 变量定义
+@baseUrl = https://discord-bot.loreluo2077.workers.dev
+@channelId = 1389779490191966389
+
+### 1. 测试发送普通消息
+POST {{baseUrl}}/custom/send-message
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "你好！这是来自 HTTP 测试的普通消息 👋"
+}
+
+### 2. 测试发送带按钮的消息
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "请选择您的操作：",
+  "buttons": [
+    {
+      "label": "✅ 确认",
+      "custom_id": "confirm_action",
+      "style": 3
+    },
+    {
+      "label": "❌ 取消",
+      "custom_id": "cancel_action",
+      "style": 4
+    },
+    {
+      "label": "📖 查看文档",
+      "url": "https://discord.com/developers/docs",
+      "style": 5
+    }
+  ]
+}
+
+### 3. 测试发送示例按钮消息
+POST {{baseUrl}}/custom/send-demo-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "这是我的自定义测试消息！🎉"
+}
+
+### 4. 测试发送投票消息
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "📊 请投票选择：今晚吃什么？",
+  "buttons": [
+    {
+      "label": "🍕 披萨",
+      "custom_id": "vote_pizza",
+      "style": 1
+    },
+    {
+      "label": "🍔 汉堡",
+      "custom_id": "vote_burger",
+      "style": 1
+    },
+    {
+      "label": "🍜 面条",
+      "custom_id": "vote_noodles",
+      "style": 1
+    },
+    {
+      "label": "🍗 炸鸡",
+      "custom_id": "vote_chicken",
+      "style": 1
+    }
+  ]
+}
+
+### 5. 测试发送多行按钮消息
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "🎮 选择您的游戏偏好：",
+  "buttons": [
+    {
+      "label": "🎯 动作游戏",
+      "custom_id": "game_action",
+      "style": 1
+    },
+    {
+      "label": "🧩 益智游戏",
+      "custom_id": "game_puzzle",
+      "style": 1
+    },
+    {
+      "label": "🏁 竞速游戏",
+      "custom_id": "game_racing",
+      "style": 1
+    },
+    {
+      "label": "👍 点赞",
+      "custom_id": "like_button",
+      "style": 3
+    },
+    {
+      "label": "❤️ 收藏",
+      "custom_id": "favorite_button",
+      "style": 2
+    },
+    {
+      "label": "🔄 分享",
+      "custom_id": "share_button",
+      "style": 2
+    }
+  ]
+}
+
+### 6. 测试发送交互式按钮
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "🎲 互动测试：点击按钮测试不同的响应类型",
+  "buttons": [
+    {
+      "label": "👍 点赞",
+      "custom_id": "like_button",
+      "style": 3
+    },
+    {
+      "label": "❤️ 收藏",
+      "custom_id": "favorite_button",
+      "style": 1
+    },
+    {
+      "label": "🔄 分享",
+      "custom_id": "share_button",
+      "style": 2
+    },
+    {
+      "label": "⚠️ 举报",
+      "custom_id": "report_button",
+      "style": 4
+    },
+    {
+      "label": "🔢 计数器",
+      "custom_id": "counter_button",
+      "style": 2
+    }
+  ]
+}
+
+### 7. 测试发送确认操作按钮
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "⚡ 确认操作：这将执行重要操作",
+  "buttons": [
+    {
+      "label": "✅ 确认执行",
+      "custom_id": "confirm_action",
+      "style": 3
+    },
+    {
+      "label": "❌ 取消操作",
+      "custom_id": "cancel_action",
+      "style": 4
+    }
+  ]
+}
+
+### 8. 测试获取频道信息
+GET {{baseUrl}}/custom/channel/{{channelId}}
+
+### 9. 测试获取API文档
+GET {{baseUrl}}/custom/docs
+
+### 10. 测试发送链接按钮
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "🔗 有用的链接：",
+  "buttons": [
+    {
+      "label": "📖 Discord 开发者文档",
+      "url": "https://discord.com/developers/docs",
+      "style": 5
+    },
+    {
+      "label": "🚀 Cloudflare Workers",
+      "url": "https://workers.cloudflare.com",
+      "style": 5
+    },
+    {
+      "label": "🐙 GitHub 仓库",
+      "url": "https://github.com",
+      "style": 5
+    }
+  ]
+}
+
+### 11. 测试时间戳按钮
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "⏰ 时间相关功能：",
+  "buttons": [
+    {
+      "label": "⏰ 获取当前时间",
+      "custom_id": "timestamp_button",
+      "style": 1
+    },
+    {
+      "label": "✅ 同意",
+      "custom_id": "agree",
+      "style": 3
+    },
+    {
+      "label": "❌ 拒绝",
+      "custom_id": "decline",
+      "style": 4
+    }
+  ]
+}
+
+### 12. 测试空内容（只有按钮）
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "",
+  "buttons": [
+    {
+      "label": "🎯 快速操作",
+      "custom_id": "quick_action",
+      "style": 1
+    }
+  ]
+}
+
+### 13. 测试错误处理 - 无效频道ID
+POST {{baseUrl}}/custom/send-message
+Content-Type: application/json
+
+{
+  "channelId": "invalid_channel_id",
+  "content": "这应该会失败"
+}
+
+### 14. 测试错误处理 - 缺少必需字段
+POST {{baseUrl}}/custom/send-message
+Content-Type: application/json
+
+{
+  "content": "缺少频道ID"
+}
+
+### 15. 测试错误处理 - 无效按钮配置
+POST {{baseUrl}}/custom/send-message-with-buttons
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "content": "无效按钮测试",
+  "buttons": [
+    {
+      "custom_id": "invalid_button",
+      "style": 1
+    }
+  ]
+} 
