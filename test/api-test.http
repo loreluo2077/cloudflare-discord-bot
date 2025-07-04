@@ -288,3 +288,10 @@ Content-Type: application/json
     }
   ]
 } 
+
+
+### 16. 测试注册命令
+POST {{baseUrl}}/custom/register
+Content-Type: application/json
+
+{}

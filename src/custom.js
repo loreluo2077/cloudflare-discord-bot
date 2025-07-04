@@ -1,5 +1,8 @@
 import { AutoRouter } from 'itty-router';
 import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
+import { buttonManager } from './button-manager.js';
+import { buttonHandler } from './button-handlers.js';
+import ButtonExamples from './button-examples.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -548,5 +551,334 @@ customRouter.post('/register', async (request, env) => {
   }
 });
 
+// 发送带参数的按钮示例
+customRouter.post('/send-order-buttons', async (request, env) => {
+  try {
+    if (!env.DISCORD_TOKEN) {
+      return new JsonResponse(
+        { error: 'DISCORD_TOKEN 环境变量未设置' },
+        { status: 500 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
+      return new JsonResponse(
+        { error: '无效的 JSON 格式' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.channelId) {
+      return new JsonResponse(
+        { error: 'channelId 参数是必需的' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{17,19}$/.test(body.channelId)) {
+      return new JsonResponse(
+        { error: 'channelId 格式无效' },
+        { status: 400 }
+      );
+    }
+
+    // 创建订单信息
+    const orderInfo = {
+      orderId: body.orderId || `ORDER-${Date.now()}`,
+      userId: body.userId || 'user123',
+      status: body.status || 'pending'
+    };
+
+    // 创建订单按钮
+    const orderButtons = buttonManager.createOrderButtons(orderInfo);
+    
+    const content = `📦 订单信息:\n• 订单ID: ${orderInfo.orderId}\n• 用户ID: ${orderInfo.userId}\n• 状态: ${orderInfo.status}\n\n请选择操作：`;
+
+    const result = await buttonManager.sendMessageWithButtons(
+      body.channelId,
+      content,
+      orderButtons,
+      env.DISCORD_TOKEN
+    );
+
+    return new JsonResponse({
+      success: true,
+      message: '订单按钮发送成功',
+      orderInfo,
+      discordResponse: {
+        id: result.id,
+        timestamp: result.timestamp,
+        channelId: result.channel_id,
+      },
+    });
+
+  } catch (error) {
+    console.error('发送订单按钮时出错:', error);
+    return new JsonResponse(
+      { 
+        error: '发送订单按钮失败',
+        details: error.message 
+      },
+      { status: 500 }
+    );
+  }
+});
+
+// 发送产品按钮示例
+customRouter.post('/send-product-buttons', async (request, env) => {
+  try {
+    if (!env.DISCORD_TOKEN) {
+      return new JsonResponse(
+        { error: 'DISCORD_TOKEN 环境变量未设置' },
+        { status: 500 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
+      return new JsonResponse(
+        { error: '无效的 JSON 格式' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.channelId) {
+      return new JsonResponse(
+        { error: 'channelId 参数是必需的' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{17,19}$/.test(body.channelId)) {
+      return new JsonResponse(
+        { error: 'channelId 格式无效' },
+        { status: 400 }
+      );
+    }
+
+    // 创建产品信息
+    const productInfo = {
+      productId: body.productId || `PROD-${Date.now()}`,
+      name: body.name || '示例产品',
+      price: body.price || 99.99
+    };
+
+    // 创建产品按钮
+    const productButtons = buttonManager.createProductButtons(productInfo);
+    
+    const content = `🛍️ 产品信息:\n• 产品ID: ${productInfo.productId}\n• 名称: ${productInfo.name}\n• 价格: ¥${productInfo.price}\n\n请选择操作：`;
+
+    const result = await buttonManager.sendMessageWithButtons(
+      body.channelId,
+      content,
+      productButtons,
+      env.DISCORD_TOKEN
+    );
+
+    return new JsonResponse({
+      success: true,
+      message: '产品按钮发送成功',
+      productInfo,
+      discordResponse: {
+        id: result.id,
+        timestamp: result.timestamp,
+        channelId: result.channel_id,
+      },
+    });
+
+  } catch (error) {
+    console.error('发送产品按钮时出错:', error);
+    return new JsonResponse(
+      { 
+        error: '发送产品按钮失败',
+        details: error.message 
+      },
+      { status: 500 }
+    );
+  }
+});
+
+// 发送分页按钮示例
+customRouter.post('/send-pagination-buttons', async (request, env) => {
+  try {
+    if (!env.DISCORD_TOKEN) {
+      return new JsonResponse(
+        { error: 'DISCORD_TOKEN 环境变量未设置' },
+        { status: 500 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
+      return new JsonResponse(
+        { error: '无效的 JSON 格式' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.channelId) {
+      return new JsonResponse(
+        { error: 'channelId 参数是必需的' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{17,19}$/.test(body.channelId)) {
+      return new JsonResponse(
+        { error: 'channelId 格式无效' },
+        { status: 400 }
+      );
+    }
+
+    // 创建分页信息
+    const pageInfo = {
+      currentPage: body.currentPage || 1,
+      totalPages: body.totalPages || 10,
+      dataType: body.dataType || 'products'
+    };
+
+    // 创建分页按钮
+    const paginationButtons = buttonManager.createPaginationButtons(pageInfo);
+    
+    const content = `📑 分页示例 (${pageInfo.dataType}):\n• 当前页: ${pageInfo.currentPage}\n• 总页数: ${pageInfo.totalPages}\n\n使用按钮来导航：`;
+
+    const result = await buttonManager.sendMessageWithButtons(
+      body.channelId,
+      content,
+      paginationButtons,
+      env.DISCORD_TOKEN
+    );
+
+    return new JsonResponse({
+      success: true,
+      message: '分页按钮发送成功',
+      pageInfo,
+      discordResponse: {
+        id: result.id,
+        timestamp: result.timestamp,
+        channelId: result.channel_id,
+      },
+    });
+
+  } catch (error) {
+    console.error('发送分页按钮时出错:', error);
+    return new JsonResponse(
+      { 
+        error: '发送分页按钮失败',
+        details: error.message 
+      },
+      { status: 500 }
+    );
+  }
+});
+
+// 发送自定义参数按钮
+customRouter.post('/send-custom-param-buttons', async (request, env) => {
+  try {
+    if (!env.DISCORD_TOKEN) {
+      return new JsonResponse(
+        { error: 'DISCORD_TOKEN 环境变量未设置' },
+        { status: 500 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
+      return new JsonResponse(
+        { error: '无效的 JSON 格式' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.channelId) {
+      return new JsonResponse(
+        { error: 'channelId 参数是必需的' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{17,19}$/.test(body.channelId)) {
+      return new JsonResponse(
+        { error: 'channelId 格式无效' },
+        { status: 400 }
+      );
+    }
+
+    // 创建自定义参数按钮
+    const customButtons = [
+      buttonManager.createButton({
+        label: '🎯 自定义操作 1',
+        customId: 'custom_action_1',
+        params: {
+          action: 'action1',
+          data: body.customData || 'default_data',
+          timestamp: Date.now()
+        },
+        style: 1, // PRIMARY
+        handler: async (interaction, env, { userName, params }) => {
+          return buttonHandler.createResponse(
+            `🎯 ${userName} 执行了自定义操作 1！\n参数: ${JSON.stringify(params, null, 2)}`,
+            'ephemeral'
+          );
+        }
+      }),
+      
+      buttonManager.createButton({
+        label: '🎪 自定义操作 2',
+        customId: 'custom_action_2',
+        params: {
+          action: 'action2',
+          userId: body.userId || 'unknown',
+          category: body.category || 'general'
+        },
+        style: 3, // SUCCESS
+        handler: async (interaction, env, { userName, params }) => {
+          return buttonHandler.createResponse(
+            `🎯 ${userName} 执行了自定义操作 2！\n参数: ${JSON.stringify(params, null, 2)}`,
+            'ephemeral'
+          );
+        }
+      })
+    ];
+    
+    const content = `⚡ 自定义参数按钮示例:\n\n这些按钮携带了自定义参数，点击后会显示参数内容。`;
+
+    const result = await buttonManager.sendMessageWithButtons(
+      body.channelId,
+      content,
+      customButtons,
+      env.DISCORD_TOKEN
+    );
+
+    return new JsonResponse({
+      success: true,
+      message: '自定义参数按钮发送成功',
+      discordResponse: {
+        id: result.id,
+        timestamp: result.timestamp,
+        channelId: result.channel_id,
+      },
+    });
+
+  } catch (error) {
+    console.error('发送自定义参数按钮时出错:', error);
+    return new JsonResponse(
+      { 
+        error: '发送自定义参数按钮失败',
+        details: error.message 
+      },
+      { status: 500 }
+    );
+  }
+});
 
 export default customRouter; 

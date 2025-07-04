@@ -39,8 +39,14 @@ export class ButtonHandler {
     const userName = user?.username || '未知用户';
     const userId = user?.id || 'unknown';
 
-    // 获取处理器
-    const handler = this.handlers.get(customId);
+    // 首先尝试直接匹配customId
+    let handler = this.handlers.get(customId);
+    
+    // 如果没有找到，尝试解码customId并匹配baseId
+    if (!handler && customId.includes('|')) {
+      const baseId = customId.split('|')[0];
+      handler = this.handlers.get(baseId);
+    }
     
     if (handler) {
       try {
