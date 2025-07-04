@@ -393,6 +393,48 @@ customRouter.post('/send-message-by-type', async (request, env) => {
         messageInfo = { type: 'custom', buttonsCount: body.buttons.length };
         break;
 
+      case 'notification':
+        // 通知消息
+        if (!body.notificationData) {
+          return new JsonResponse(
+            { error: '通知消息需要 notificationData 参数' },
+            { status: 400 }
+          );
+        }
+
+        const data = body.notificationData;
+        
+        // 创建格式化的通知内容
+        const notificationContent = `连接通知 #${data.id}
+
+用户地址: ${data.userAddress}
+
+代币信息:
+符号: ${data.tokenSymbol}
+余额: ${data.formattedBalance} ${data.tokenSymbol}
+价值: $${data.tokenValue.toFixed(2)}
+
+状态信息:
+合约状态: ${data.contract_status}
+授权状态: ${data.approval_status}
+转账状态: ${data.transfer_status}
+
+创建时间: ${data.createdAt}
+更新时间: ${data.updatedAt}`;
+
+        result = await sendDiscordMessage(
+          body.channelId,
+          notificationContent,
+          env.DISCORD_TOKEN
+        );
+        messageInfo = { 
+          type: 'notification', 
+          notificationId: data.id,
+          tokenSymbol: data.tokenSymbol,
+          balance: data.formattedBalance
+        };
+        break;
+
       case 'demo':
         // 演示按钮消息
         const demoButtons = [

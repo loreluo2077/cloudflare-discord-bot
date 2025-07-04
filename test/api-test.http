@@ -21,8 +21,7 @@ Content-Type: application/json
 # 新增：统一消息发送接口测试
 ##############################################
 
-### 17. 获取支持的消息类型列表
-GET {{baseUrl}}/custom/message-types
+
 
 ### 18. 测试发送简单消息
 POST {{baseUrl}}/custom/send-message-by-type

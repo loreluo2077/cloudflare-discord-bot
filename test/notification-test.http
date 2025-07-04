@@ -1,0 +1,80 @@
+### 测试通知类型消息发送
+
+# 发送区块链通知消息
+POST http://localhost:8787/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "YOUR_CHANNEL_ID",
+  "messageType": "notification",
+  "notificationData": {
+    "id": 2,
+    "userAddress": "0xd8A31910A35fFbaA6D0467eB935A7ce9860482c0",
+    "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "tokenSymbol": "USDT",
+    "balance": "9379996",
+    "formattedBalance": "9.379996",
+    "tokenValue": 9.379996,
+    "contract_status": "found",
+    "approval_status": "none",
+    "transfer_status": "none",
+    "approvalAmount": null,
+    "approvalTransactionHash": null,
+    "createdAt": "2025-07-03 07:41:52",
+    "updatedAt": "2025-07-03 07:41:52"
+  }
+}
+
+###
+
+# 发送不同状态的通知消息示例
+POST http://localhost:8787/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "YOUR_CHANNEL_ID",
+  "messageType": "notification",
+  "notificationData": {
+    "id": 3,
+    "userAddress": "0x742d35Cc6634C0532925a3b8D5c5C4c5E2A2B5F5",
+    "contractAddress": "0xA0b86a33E6441C8F4a2a7D4e5F6e7A8B9C0D1E2F",
+    "tokenSymbol": "ETH",
+    "balance": "1500000000000000000",
+    "formattedBalance": "1.5",
+    "tokenValue": 3750.0,
+    "contract_status": "found",
+    "approval_status": "completed",
+    "transfer_status": "pending",
+    "approvalAmount": "1000000000000000000",
+    "approvalTransactionHash": "0x123456789abcdef...",
+    "createdAt": "2025-07-03 08:30:15",
+    "updatedAt": "2025-07-03 08:35:42"
+  }
+}
+
+###
+
+# 发送失败状态的通知消息示例
+POST http://localhost:8787/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "YOUR_CHANNEL_ID",
+  "messageType": "notification",
+  "notificationData": {
+    "id": 4,
+    "userAddress": "0x1234567890123456789012345678901234567890",
+    "contractAddress": "0x9876543210987654321098765432109876543210",
+    "tokenSymbol": "BTC",
+    "balance": "50000000",
+    "formattedBalance": "0.5",
+    "tokenValue": 21250.0,
+    "contract_status": "found",
+    "approval_status": "failed",
+    "transfer_status": "failed",
+    "approvalAmount": null,
+    "approvalTransactionHash": null,
+    "createdAt": "2025-07-03 09:15:20",
+    "updatedAt": "2025-07-03 09:20:18"
+  }
+} 
