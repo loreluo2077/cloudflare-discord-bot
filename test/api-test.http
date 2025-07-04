@@ -10,288 +10,191 @@
 @baseUrl = https://discord-bot.loreluo2077.workers.dev
 @channelId = 1389779490191966389
 
-### 1. 测试发送普通消息
-POST {{baseUrl}}/custom/send-message
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "你好！这是来自 HTTP 测试的普通消息 👋"
-}
-
-### 2. 测试发送带按钮的消息
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "请选择您的操作：",
-  "buttons": [
-    {
-      "label": "✅ 确认",
-      "custom_id": "confirm_action",
-      "style": 3
-    },
-    {
-      "label": "❌ 取消",
-      "custom_id": "cancel_action",
-      "style": 4
-    },
-    {
-      "label": "📖 查看文档",
-      "url": "https://discord.com/developers/docs",
-      "style": 5
-    }
-  ]
-}
-
-### 3. 测试发送示例按钮消息
-POST {{baseUrl}}/custom/send-demo-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "这是我的自定义测试消息！🎉"
-}
-
-### 4. 测试发送投票消息
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "📊 请投票选择：今晚吃什么？",
-  "buttons": [
-    {
-      "label": "🍕 披萨",
-      "custom_id": "vote_pizza",
-      "style": 1
-    },
-    {
-      "label": "🍔 汉堡",
-      "custom_id": "vote_burger",
-      "style": 1
-    },
-    {
-      "label": "🍜 面条",
-      "custom_id": "vote_noodles",
-      "style": 1
-    },
-    {
-      "label": "🍗 炸鸡",
-      "custom_id": "vote_chicken",
-      "style": 1
-    }
-  ]
-}
-
-### 5. 测试发送多行按钮消息
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "🎮 选择您的游戏偏好：",
-  "buttons": [
-    {
-      "label": "🎯 动作游戏",
-      "custom_id": "game_action",
-      "style": 1
-    },
-    {
-      "label": "🧩 益智游戏",
-      "custom_id": "game_puzzle",
-      "style": 1
-    },
-    {
-      "label": "🏁 竞速游戏",
-      "custom_id": "game_racing",
-      "style": 1
-    },
-    {
-      "label": "👍 点赞",
-      "custom_id": "like_button",
-      "style": 3
-    },
-    {
-      "label": "❤️ 收藏",
-      "custom_id": "favorite_button",
-      "style": 2
-    },
-    {
-      "label": "🔄 分享",
-      "custom_id": "share_button",
-      "style": 2
-    }
-  ]
-}
-
-### 6. 测试发送交互式按钮
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "🎲 互动测试：点击按钮测试不同的响应类型",
-  "buttons": [
-    {
-      "label": "👍 点赞",
-      "custom_id": "like_button",
-      "style": 3
-    },
-    {
-      "label": "❤️ 收藏",
-      "custom_id": "favorite_button",
-      "style": 1
-    },
-    {
-      "label": "🔄 分享",
-      "custom_id": "share_button",
-      "style": 2
-    },
-    {
-      "label": "⚠️ 举报",
-      "custom_id": "report_button",
-      "style": 4
-    },
-    {
-      "label": "🔢 计数器",
-      "custom_id": "counter_button",
-      "style": 2
-    }
-  ]
-}
-
-### 7. 测试发送确认操作按钮
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "⚡ 确认操作：这将执行重要操作",
-  "buttons": [
-    {
-      "label": "✅ 确认执行",
-      "custom_id": "confirm_action",
-      "style": 3
-    },
-    {
-      "label": "❌ 取消操作",
-      "custom_id": "cancel_action",
-      "style": 4
-    }
-  ]
-}
-
-### 8. 测试获取频道信息
-GET {{baseUrl}}/custom/channel/{{channelId}}
-
-### 9. 测试获取API文档
-GET {{baseUrl}}/custom/docs
-
-### 10. 测试发送链接按钮
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "🔗 有用的链接：",
-  "buttons": [
-    {
-      "label": "📖 Discord 开发者文档",
-      "url": "https://discord.com/developers/docs",
-      "style": 5
-    },
-    {
-      "label": "🚀 Cloudflare Workers",
-      "url": "https://workers.cloudflare.com",
-      "style": 5
-    },
-    {
-      "label": "🐙 GitHub 仓库",
-      "url": "https://github.com",
-      "style": 5
-    }
-  ]
-}
-
-### 11. 测试时间戳按钮
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "⏰ 时间相关功能：",
-  "buttons": [
-    {
-      "label": "⏰ 获取当前时间",
-      "custom_id": "timestamp_button",
-      "style": 1
-    },
-    {
-      "label": "✅ 同意",
-      "custom_id": "agree",
-      "style": 3
-    },
-    {
-      "label": "❌ 拒绝",
-      "custom_id": "decline",
-      "style": 4
-    }
-  ]
-}
-
-### 12. 测试空内容（只有按钮）
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "",
-  "buttons": [
-    {
-      "label": "🎯 快速操作",
-      "custom_id": "quick_action",
-      "style": 1
-    }
-  ]
-}
-
-### 13. 测试错误处理 - 无效频道ID
-POST {{baseUrl}}/custom/send-message
-Content-Type: application/json
-
-{
-  "channelId": "invalid_channel_id",
-  "content": "这应该会失败"
-}
-
-### 14. 测试错误处理 - 缺少必需字段
-POST {{baseUrl}}/custom/send-message
-Content-Type: application/json
-
-{
-  "content": "缺少频道ID"
-}
-
-### 15. 测试错误处理 - 无效按钮配置
-POST {{baseUrl}}/custom/send-message-with-buttons
-Content-Type: application/json
-
-{
-  "channelId": "{{channelId}}",
-  "content": "无效按钮测试",
-  "buttons": [
-    {
-      "custom_id": "invalid_button",
-      "style": 1
-    }
-  ]
-} 
-
 
 ### 16. 测试注册命令
 POST {{baseUrl}}/custom/register
 Content-Type: application/json
 
 {}
+
+##############################################
+# 新增：统一消息发送接口测试
+##############################################
+
+### 17. 获取支持的消息类型列表
+GET {{baseUrl}}/custom/message-types
+
+### 18. 测试发送简单消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "simple",
+  "content": "🔤 这是一条简单的文本消息，通过统一接口发送！"
+}
+
+### 19. 测试发送订单消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "order",
+  "orderId": "ORDER-TEST-001",
+  "userId": "user123",
+  "status": "pending"
+}
+
+### 20. 测试发送产品消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "product",
+  "productId": "PROD-TEST-001",
+  "name": "测试产品",
+  "price": 199.99
+}
+
+### 21. 测试发送分页消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "pagination",
+  "currentPage": 1,
+  "totalPages": 5,
+  "dataType": "orders"
+}
+
+### 22. 测试发送常用按钮消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "common",
+  "content": "👍 这是一条带常用按钮的消息，请点击下方按钮进行互动！",
+  "buttonOptions": {
+    "like": true,
+    "favorite": true,
+    "share": true,
+    "report": true
+  }
+}
+
+### 23. 测试发送确认消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "confirm",
+  "content": "⚠️ 确定要删除这个重要文件吗？此操作不可撤销！",
+  "confirmText": "🗑️ 确认删除",
+  "cancelText": "🚫 取消操作",
+  "params": {
+    "fileId": "important_file.txt",
+    "operation": "delete"
+  }
+}
+
+### 24. 测试发送自定义按钮消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "custom",
+  "content": "🎯 自定义按钮测试：这些按钮都携带了自定义参数",
+  "buttons": [
+    {
+      "label": "🎪 自定义操作 1",
+      "customId": "custom_action_1",
+      "style": 1,
+      "params": {
+        "action": "action1",
+        "data": "test_data_1",
+        "timestamp": "2024-01-01T00:00:00Z"
+      }
+    },
+    {
+      "label": "🎭 自定义操作 2",
+      "customId": "custom_action_2",
+      "style": 3,
+      "params": {
+        "action": "action2",
+        "userId": "test_user",
+        "category": "test_category"
+      }
+    }
+  ]
+}
+
+### 25. 测试发送演示消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "demo",
+  "content": "🎉 这是一个演示消息，包含了各种类型的按钮！"
+}
+
+### 26. 测试带自定义内容的订单消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "order",
+  "orderId": "ORDER-CUSTOM-001",
+  "userId": "vip_user",
+  "status": "processing",
+  "content": "🎁 VIP订单处理中：\n• 订单编号：ORDER-CUSTOM-001\n• 用户类型：VIP会员\n• 当前状态：正在处理\n• 预计完成时间：2小时内\n\n请选择您的操作："
+}
+
+### 27. 测试带自定义内容的产品消息
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "product",
+  "productId": "PROD-PREMIUM-001",
+  "name": "高级会员套餐",
+  "price": 299.99,
+  "content": "⭐ 限时特惠产品：\n• 产品名称：高级会员套餐\n• 原价：¥399.99\n• 特惠价：¥299.99\n• 优惠幅度：25% OFF\n• 剩余时间：24小时\n\n立即行动，享受超值优惠！"
+}
+
+### 28. 测试分页消息（第5页）
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "pagination",
+  "currentPage": 5,
+  "totalPages": 10,
+  "dataType": "users",
+  "content": "👥 用户列表 (第5页)：\n• 显示用户：41-50\n• 总用户数：100人\n• 排序方式：注册时间\n\n使用下方按钮进行翻页："
+}
+
+### 29. 测试常用按钮消息（部分按钮）
+POST {{baseUrl}}/custom/send-message-by-type
+Content-Type: application/json
+
+{
+  "channelId": "{{channelId}}",
+  "messageType": "common",
+  "content": "📱 这条消息只显示点赞和收藏按钮",
+  "buttonOptions": {
+    "like": true,
+    "favorite": true,
+    "share": false,
+    "report": false
+  }
+}
