@@ -434,24 +434,24 @@ customRouter.post('/send-message-by-type', async (request, env) => {
 
         // 创建 Discord Embed
         const notificationEmbed = {
-          title: `🔔 新通知 #`,
+          title: `🔔 最新通知`,
           description: `用户地址: \`${data.userAddress}\``,
           color: color,
           fields: [
             {
               name: '记录ID',
               value: `${data.id}`,
-              inline: true
+              inline: false
             },
             {
               name: '💰 最高价值的代币信息',
               value: `**符号:** ${data.tokenSymbol}\n**余额:** ${data.formattedBalance} ${data.tokenSymbol}\n**价值:** $${data.tokenValue.toFixed(2)}`,
-              inline: true
+              inline: false
             },
             {
               name: '📊 状态信息',
               value: ` ${getStatusText(data)}`,
-              inline: true
+              inline: false
             },
             {
               name: '⏰ 时间信息',
@@ -461,7 +461,7 @@ customRouter.post('/send-message-by-type', async (request, env) => {
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: '区块链通知系统'
+            text: '通知系统'
           }
         };
 
