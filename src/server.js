@@ -9,7 +9,6 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
-import { getCuteUrl } from './reddit.js';
 import { InteractionResponseFlags } from 'discord-interactions';
 import customRouter from './custom.js';
 import { buttonHandler } from './button-handlers.js';
