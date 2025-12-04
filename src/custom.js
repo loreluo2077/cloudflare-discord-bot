@@ -212,6 +212,318 @@ customRouter.post('/register', async (request, env) => {
 
 
 
+/**
+ * 处理简单消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object|JsonResponse>} 返回结果或错误响应
+ */
+async function handleSimpleMessage(body, env) {
+  if (!body.content) {
+    return new JsonResponse(
+      { error: '简单消息需要 content 参数' },
+      { status: 400 }
+    );
+  }
+  
+  const result = await sendDiscordMessage(
+    body.channelId,
+    body.content,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'simple', content: body.content };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理订单消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object>} 返回结果
+ */
+async function handleOrderMessage(body, env) {
+  const orderInfo = {
+    orderId: body.orderId || `ORDER-${Date.now()}`,
+    userId: body.userId || 'user123',
+    status: body.status || 'pending'
+  };
+
+  const orderButtons = buttonManager.createOrderButtons(orderInfo);
+  const orderContent = body.content || `📦 订单信息:\n• 订单ID: ${orderInfo.orderId}\n• 用户ID: ${orderInfo.userId}\n• 状态: ${orderInfo.status}\n\n请选择操作：`;
+
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    orderContent,
+    orderButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'order', orderInfo };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理产品消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object>} 返回结果
+ */
+async function handleProductMessage(body, env) {
+  const productInfo = {
+    productId: body.productId || `PROD-${Date.now()}`,
+    name: body.name || '示例产品',
+    price: body.price || 99.99
+  };
+
+  const productButtons = buttonManager.createProductButtons(productInfo);
+  const productContent = body.content || `🛍️ 产品信息:\n• 产品ID: ${productInfo.productId}\n• 名称: ${productInfo.name}\n• 价格: ¥${productInfo.price}\n\n请选择操作：`;
+
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    productContent,
+    productButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'product', productInfo };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理分页消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object>} 返回结果
+ */
+async function handlePaginationMessage(body, env) {
+  const pageInfo = {
+    currentPage: body.currentPage || 1,
+    totalPages: body.totalPages || 10,
+    dataType: body.dataType || 'products'
+  };
+
+  const paginationButtons = buttonManager.createPaginationButtons(pageInfo);
+  const paginationContent = body.content || `📑 分页示例 (${pageInfo.dataType}):\n• 当前页: ${pageInfo.currentPage}\n• 总页数: ${pageInfo.totalPages}\n\n使用按钮来导航：`;
+
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    paginationContent,
+    paginationButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'pagination', pageInfo };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理常用按钮消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object|JsonResponse>} 返回结果或错误响应
+ */
+async function handleCommonMessage(body, env) {
+  if (!body.content) {
+    return new JsonResponse(
+      { error: '常用按钮消息需要 content 参数' },
+      { status: 400 }
+    );
+  }
+
+  const commonButtons = buttonManager.createCommonButtons(body.buttonOptions || {});
+  
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    body.content,
+    commonButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'common', buttonOptions: body.buttonOptions };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理确认/取消消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object|JsonResponse>} 返回结果或错误响应
+ */
+async function handleConfirmMessage(body, env) {
+  if (!body.content) {
+    return new JsonResponse(
+      { error: '确认消息需要 content 参数' },
+      { status: 400 }
+    );
+  }
+
+  const confirmButtons = buttonManager.createConfirmCancelButtons({
+    confirmText: body.confirmText,
+    cancelText: body.cancelText,
+    params: body.params || {}
+  });
+
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    body.content,
+    confirmButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { 
+    type: 'confirm', 
+    confirmText: body.confirmText,
+    cancelText: body.cancelText,
+    params: body.params
+  };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理自定义按钮消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object|JsonResponse>} 返回结果或错误响应
+ */
+async function handleCustomMessage(body, env) {
+  if (!body.content) {
+    return new JsonResponse(
+      { error: '自定义消息需要 content 参数' },
+      { status: 400 }
+    );
+  }
+
+  if (!body.buttons || !Array.isArray(body.buttons)) {
+    return new JsonResponse(
+      { error: '自定义消息需要 buttons 参数，且必须是数组' },
+      { status: 400 }
+    );
+  }
+
+  // 创建自定义按钮
+  const customButtons = body.buttons.map(buttonConfig => {
+    return buttonManager.createButton({
+      label: buttonConfig.label,
+      customId: buttonConfig.customId,
+      params: buttonConfig.params || {},
+      style: buttonConfig.style || 1,
+      handler: buttonConfig.handler || (async (interaction, env, { userName, params }) => {
+        return buttonHandler.createResponse(
+          `🎯 ${userName} 点击了自定义按钮！\n参数: ${JSON.stringify(params, null, 2)}`,
+          'ephemeral'
+        );
+      })
+    });
+  });
+
+  const result = await buttonManager.sendMessageWithButtons(
+    body.channelId,
+    body.content,
+    customButtons,
+    env.DISCORD_TOKEN
+  );
+  const messageInfo = { type: 'custom', buttonsCount: body.buttons.length };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理通知消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object|JsonResponse>} 返回结果或错误响应
+ */
+async function handleNotificationMessage(body, env) {
+  if (!body.notificationData) {
+    return new JsonResponse(
+      { error: '通知消息需要 notificationData 参数' },
+      { status: 400 }
+    );
+  }
+
+  const data = body.notificationData;
+  const color = 0x3498db; // 默认蓝色
+
+  // 创建 Discord Embed
+  const notificationEmbed = {
+    title: `🔔 最新通知`,
+    description: `用户地址: \`${data.userAddress}\``,
+    color: color,
+    fields: [
+      {
+        name: '记录ID',
+        value: `${data.id}`,
+        inline: false
+      },
+      {
+        name: '💰 最高价值的代币信息',
+        value: `**符号:** ${data.tokenSymbol}\n**余额:** ${data.formattedBalance} ${data.tokenSymbol}\n**价值:** $${data.tokenValue}`,
+        inline: false
+      },
+      {
+        name: '📊 状态信息',
+        value: ` ${getStatusText(data)}`,
+        inline: false
+      },
+      {
+        name: '⏰ 时间信息',
+        value: `**创建时间:** ${data.createdAt}\n**更新时间:** ${data.updatedAt}`,
+        inline: false
+      }
+    ],
+    timestamp: new Date().toISOString(),
+    footer: {
+      text: '通知系统'
+    }
+  };
+
+  const result = await sendDiscordMessage(
+    body.channelId,
+    null, // 不需要文本内容，使用embed
+    env.DISCORD_TOKEN,
+    null, // 暂不添加按钮
+    [notificationEmbed]
+  );
+  const messageInfo = { 
+    type: 'notification', 
+    notificationId: data.id,
+    tokenSymbol: data.tokenSymbol,
+    balance: data.formattedBalance
+  };
+  
+  return { result, messageInfo };
+}
+
+/**
+ * 处理演示消息
+ * @param {Object} body - 请求体
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object>} 返回结果
+ */
+async function handleDemoMessage(body, env) {
+  const demoButtons = [
+    { label: '👍 点赞', custom_id: 'like_button', style: 3 },
+    { label: '❤️ 收藏', custom_id: 'favorite_button', style: 1 },
+    { label: '🔄 分享', custom_id: 'share_button', style: 2 },
+    { label: '⚠️ 举报', custom_id: 'report_button', style: 4 },
+    { label: '🔗 访问官网', url: 'https://discord.com', style: 5 }
+  ];
+
+  const demoComponents = createButtonComponents(demoButtons);
+  const demoContent = body.content || '🎉 这是一个演示消息！\n\n请点击下面的按钮来测试：';
+
+  const result = await sendDiscordMessage(
+    body.channelId,
+    demoContent,
+    env.DISCORD_TOKEN,
+    demoComponents
+  );
+  const messageInfo = { type: 'demo', buttonsCount: demoButtons.length };
+  
+  return { result, messageInfo };
+}
+
 // 统一消息发送接口
 customRouter.post('/send-message-by-type', async (request, env) => {
   try {
@@ -261,264 +573,37 @@ customRouter.post('/send-message-by-type', async (request, env) => {
     let messageInfo = {};
 
     // 根据消息类型处理不同的消息
-    switch (body.messageType) {
-      case 'simple':
-        // 简单消息，只需要文本
-        if (!body.content) {
-          return new JsonResponse(
-            { error: '简单消息需要 content 参数' },
-            { status: 400 }
-          );
-        }
-        
-        result = await sendDiscordMessage(
-          body.channelId,
-          body.content,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'simple', content: body.content };
-        break;
+    const handlerMap = {
+      'simple': handleSimpleMessage,
+      'order': handleOrderMessage,
+      'product': handleProductMessage,
+      'pagination': handlePaginationMessage,
+      'common': handleCommonMessage,
+      'confirm': handleConfirmMessage,
+      'custom': handleCustomMessage,
+      'notification': handleNotificationMessage,
+      'demo': handleDemoMessage
+    };
 
-      case 'order':
-        // 订单消息
-        const orderInfo = {
-          orderId: body.orderId || `ORDER-${Date.now()}`,
-          userId: body.userId || 'user123',
-          status: body.status || 'pending'
-        };
-
-        const orderButtons = buttonManager.createOrderButtons(orderInfo);
-        const orderContent = body.content || `📦 订单信息:\n• 订单ID: ${orderInfo.orderId}\n• 用户ID: ${orderInfo.userId}\n• 状态: ${orderInfo.status}\n\n请选择操作：`;
-
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          orderContent,
-          orderButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'order', orderInfo };
-        break;
-
-      case 'product':
-        // 产品消息
-        const productInfo = {
-          productId: body.productId || `PROD-${Date.now()}`,
-          name: body.name || '示例产品',
-          price: body.price || 99.99
-        };
-
-        const productButtons = buttonManager.createProductButtons(productInfo);
-        const productContent = body.content || `🛍️ 产品信息:\n• 产品ID: ${productInfo.productId}\n• 名称: ${productInfo.name}\n• 价格: ¥${productInfo.price}\n\n请选择操作：`;
-
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          productContent,
-          productButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'product', productInfo };
-        break;
-
-      case 'pagination':
-        // 分页消息
-        const pageInfo = {
-          currentPage: body.currentPage || 1,
-          totalPages: body.totalPages || 10,
-          dataType: body.dataType || 'products'
-        };
-
-        const paginationButtons = buttonManager.createPaginationButtons(pageInfo);
-        const paginationContent = body.content || `📑 分页示例 (${pageInfo.dataType}):\n• 当前页: ${pageInfo.currentPage}\n• 总页数: ${pageInfo.totalPages}\n\n使用按钮来导航：`;
-
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          paginationContent,
-          paginationButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'pagination', pageInfo };
-        break;
-
-      case 'common':
-        // 常用按钮消息
-        if (!body.content) {
-          return new JsonResponse(
-            { error: '常用按钮消息需要 content 参数' },
-            { status: 400 }
-          );
-        }
-
-        const commonButtons = buttonManager.createCommonButtons(body.buttonOptions || {});
-        
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          body.content,
-          commonButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'common', buttonOptions: body.buttonOptions };
-        break;
-
-      case 'confirm':
-        // 确认/取消按钮消息
-        if (!body.content) {
-          return new JsonResponse(
-            { error: '确认消息需要 content 参数' },
-            { status: 400 }
-          );
-        }
-
-        const confirmButtons = buttonManager.createConfirmCancelButtons({
-          confirmText: body.confirmText,
-          cancelText: body.cancelText,
-          params: body.params || {}
-        });
-
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          body.content,
-          confirmButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { 
-          type: 'confirm', 
-          confirmText: body.confirmText,
-          cancelText: body.cancelText,
-          params: body.params
-        };
-        break;
-
-      case 'custom':
-        // 自定义按钮消息
-        if (!body.content) {
-          return new JsonResponse(
-            { error: '自定义消息需要 content 参数' },
-            { status: 400 }
-          );
-        }
-
-        if (!body.buttons || !Array.isArray(body.buttons)) {
-          return new JsonResponse(
-            { error: '自定义消息需要 buttons 参数，且必须是数组' },
-            { status: 400 }
-          );
-        }
-
-        // 创建自定义按钮
-        const customButtons = body.buttons.map(buttonConfig => {
-          return buttonManager.createButton({
-            label: buttonConfig.label,
-            customId: buttonConfig.customId,
-            params: buttonConfig.params || {},
-            style: buttonConfig.style || 1,
-            handler: buttonConfig.handler || (async (interaction, env, { userName, params }) => {
-              return buttonHandler.createResponse(
-                `🎯 ${userName} 点击了自定义按钮！\n参数: ${JSON.stringify(params, null, 2)}`,
-                'ephemeral'
-              );
-            })
-          });
-        });
-
-        result = await buttonManager.sendMessageWithButtons(
-          body.channelId,
-          body.content,
-          customButtons,
-          env.DISCORD_TOKEN
-        );
-        messageInfo = { type: 'custom', buttonsCount: body.buttons.length };
-        break;
-
-      case 'notification':
-        // 通知消息
-        if (!body.notificationData) {
-          return new JsonResponse(
-            { error: '通知消息需要 notificationData 参数' },
-            { status: 400 }
-          );
-        }
-
-        const data = body.notificationData;
-        
-      
-        let color = 0x3498db; // 默认蓝色
-
-        // 创建 Discord Embed
-        const notificationEmbed = {
-          title: `🔔 最新通知`,
-          description: `用户地址: \`${data.userAddress}\``,
-          color: color,
-          fields: [
-            {
-              name: '记录ID',
-              value: `${data.id}`,
-              inline: false
-            },
-            {
-              name: '💰 最高价值的代币信息',
-              value: `**符号:** ${data.tokenSymbol}\n**余额:** ${data.formattedBalance} ${data.tokenSymbol}\n**价值:** $${data.tokenValue.toFixed(2)}`,
-              inline: false
-            },
-            {
-              name: '📊 状态信息',
-              value: ` ${getStatusText(data)}`,
-              inline: false
-            },
-            {
-              name: '⏰ 时间信息',
-              value: `**创建时间:** ${data.createdAt}\n**更新时间:** ${data.updatedAt}`,
-              inline: false
-            }
-          ],
-          timestamp: new Date().toISOString(),
-          footer: {
-            text: '通知系统'
-          }
-        };
-
-        result = await sendDiscordMessage(
-          body.channelId,
-          null, // 不需要文本内容，使用embed
-          env.DISCORD_TOKEN,
-          null, // 暂不添加按钮
-          [notificationEmbed]
-        );
-        messageInfo = { 
-          type: 'notification', 
-          notificationId: data.id,
-          tokenSymbol: data.tokenSymbol,
-          balance: data.formattedBalance
-        };
-        break;
-
-      case 'demo':
-        // 演示按钮消息
-        const demoButtons = [
-          { label: '👍 点赞', custom_id: 'like_button', style: 3 },
-          { label: '❤️ 收藏', custom_id: 'favorite_button', style: 1 },
-          { label: '🔄 分享', custom_id: 'share_button', style: 2 },
-          { label: '⚠️ 举报', custom_id: 'report_button', style: 4 },
-          { label: '🔗 访问官网', url: 'https://discord.com', style: 5 }
-        ];
-
-        const demoComponents = createButtonComponents(demoButtons);
-        const demoContent = body.content || '🎉 这是一个演示消息！\n\n请点击下面的按钮来测试：';
-
-        result = await sendDiscordMessage(
-          body.channelId,
-          demoContent,
-          env.DISCORD_TOKEN,
-          demoComponents
-        );
-        messageInfo = { type: 'demo', buttonsCount: demoButtons.length };
-        break;
-
-      default:
-        return new JsonResponse(
-          { error: `不支持的消息类型: ${body.messageType}` },
-          { status: 400 }
-        );
+    const handler = handlerMap[body.messageType];
+    
+    if (!handler) {
+      return new JsonResponse(
+        { error: `不支持的消息类型: ${body.messageType}` },
+        { status: 400 }
+      );
     }
+
+    // 调用对应的处理方法
+    const handlerResult = await handler(body, env);
+    
+    // 如果返回的是 JsonResponse（错误情况），直接返回
+    if (handlerResult instanceof JsonResponse) {
+      return handlerResult;
+    }
+    
+    // 否则解构结果和消息信息
+    ({ result, messageInfo } = handlerResult);
 
     return new JsonResponse({
       success: true,
